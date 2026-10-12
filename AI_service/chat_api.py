@@ -11,7 +11,8 @@ from google import genai
 from google.genai import types
 from pydantic import BaseModel, Field
 
-from AI_service.ai_service import BUSINESS_CONTEXT, SYSTEM_PROMPT
+from AI_service import settings
+from AI_service.ai_service import BUSINESS_CONTEXT, MODEL, SYSTEM_PROMPT
 
 app = FastAPI()
 logger = logging.getLogger(__name__)
@@ -89,7 +90,7 @@ vector_store = []
 
 def create_embedding(text, task_type):
     result = client.models.embed_content(
-        model="gemini-embedding-001",
+        model=settings.GEMINI_EMBEDDING_MODEL,
         contents=text,
         config=types.EmbedContentConfig(task_type=task_type)
     )
@@ -225,7 +226,7 @@ def chat(request: ChatRequest):
     try:
         prompt_data["retrieved_knowledge"] = search_knowledge(request.message)
         response = client.models.generate_content(
-            model="gemini-3.5-flash-lite",
+            model=MODEL,
             contents=json.dumps(prompt_data, ensure_ascii=False),
             config=types.GenerateContentConfig(
                 system_instruction=SYSTEM_PROMPT

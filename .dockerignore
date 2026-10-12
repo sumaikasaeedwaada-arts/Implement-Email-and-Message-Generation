@@ -1,0 +1,10 @@
+.git
+.venv
+venv
+__pycache__
+**/__pycache__
+*.py[cod]
+.env
+data
+AI_service/test_*.py
+chatbot_analysis_report.md
