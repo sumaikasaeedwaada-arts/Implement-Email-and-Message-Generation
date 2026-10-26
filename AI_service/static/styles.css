@@ -140,7 +140,7 @@ h1 { margin: 0; font-size: 29px; letter-spacing: -.04em; }
   font-size: 12px;
 }
 .composer { position: relative; width: min(820px, calc(100% - 36px)); margin: 0 auto 19px; }
-.composer textarea {
+.composer #message-input {
   display: block;
   width: 100%;
   min-height: 54px;
@@ -152,6 +152,22 @@ h1 { margin: 0; font-size: 29px; letter-spacing: -.04em; }
   outline-color: #7774e6;
   box-shadow: 0 5px 20px #1c2a4410;
 }
+.context-details { margin: 12px 0; color: #687386; font-size: 12px; }
+.context-details summary { cursor: pointer; font-weight: 650; }
+.context-note { margin: 8px 0; color: #8992a2; font-size: 11px; }
+.context-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.context-fields label { display: grid; gap: 5px; color: #596476; font-size: 11px; }
+.context-fields input, .context-fields textarea {
+  width: 100%;
+  min-height: 36px;
+  padding: 8px 9px;
+  resize: vertical;
+  border: 1px solid #dce1eb;
+  border-radius: 8px;
+  outline-color: #7774e6;
+  font-size: 12px;
+}
+.context-fields .context-wide { grid-column: 1 / -1; }
 .send-button { position: absolute; top: 8px; right: 8px; width: 38px; height: 38px; border-radius: 10px; font-size: 21px; }
 .send-button:disabled { opacity: .55; cursor: wait; }
 .composer p { margin: 8px 0 0; color: #929aaa; font-size: 11px; text-align: center; }

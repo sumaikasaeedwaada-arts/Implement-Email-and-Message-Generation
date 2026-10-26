@@ -47,8 +47,39 @@ function signOut() {
   localStorage.removeItem("assistant-token");
   token = null;
   activeConversation = null;
+  clearContextFields();
   workspace.classList.add("hidden");
   authScreen.classList.remove("hidden");
+}
+
+function clearContextFields() {
+  document.querySelectorAll(".context-fields input, .context-fields textarea")
+    .forEach((field) => { field.value = ""; });
+}
+
+function readMessageContext() {
+  const customer_identifier = document.querySelector("#customer-identifier").value.trim();
+  const readFields = (fields) => Object.fromEntries(
+    fields.map(([key, selector]) => [key, document.querySelector(selector).value.trim()])
+      .filter(([, value]) => value)
+  );
+  const business_context = readFields([
+    ["business_id", "#business-context-id"],
+    ["name", "#business-context-name"],
+    ["details", "#business-context-details"]
+  ]);
+  const task_context = readFields([
+    ["task_id", "#task-context-id"],
+    ["current_task", "#task-context-current"],
+    ["details", "#task-context-details"],
+    ["status", "#task-context-status"],
+    ["notes", "#task-context-notes"]
+  ]);
+  return {
+    ...(customer_identifier ? { customer_identifier } : {}),
+    ...(Object.keys(business_context).length ? { business_context } : {}),
+    ...(Object.keys(task_context).length ? { task_context } : {})
+  };
 }
 
 function addMessage(role, content, citations = []) {
@@ -103,6 +134,7 @@ async function loadDocuments() {
 }
 
 async function openConversation(id) {
+  clearContextFields();
   activeConversation = id;
   const { messages } = await api(`/api/conversations/${encodeURIComponent(id)}/messages`);
   const conversations = await loadConversations();
@@ -162,6 +194,7 @@ authForm.addEventListener("submit", async (event) => {
 
 document.querySelector("#new-chat").addEventListener("click", async () => {
   try {
+    clearContextFields();
     const conversation = await api("/api/conversations", {
       method: "POST",
       body: JSON.stringify({ title: "New conversation" })
@@ -201,7 +234,10 @@ messageForm.addEventListener("submit", async (event) => {
     messagesNode.scrollTop = messagesNode.scrollHeight;
     const result = await api(
       `/api/conversations/${encodeURIComponent(activeConversation)}/messages`,
-      { method: "POST", body: JSON.stringify({ message: text }) }
+      {
+        method: "POST",
+        body: JSON.stringify({ message: text, ...readMessageContext() })
+      }
     );
     pending.remove();
     addMessage("assistant", result.response, result.citations);

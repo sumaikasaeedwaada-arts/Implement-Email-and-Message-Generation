@@ -60,6 +60,21 @@
         <form id="message-form" class="composer">
           <textarea id="message-input" rows="1" maxlength="4000"
             placeholder="Ask a question about your business…" required></textarea>
+          <details class="context-details">
+            <summary>Add customer, business, or task context (optional)</summary>
+            <p class="context-note">Customer identifiers search your uploaded records. Context details are sent with each message and are not saved as records.</p>
+            <div class="context-fields">
+              <label>Customer ID, name, or contact<input id="customer-identifier" maxlength="200"></label>
+              <label>Business ID<input id="business-context-id" maxlength="128"></label>
+              <label>Business name<input id="business-context-name" maxlength="200"></label>
+              <label class="context-wide">Business details<textarea id="business-context-details" maxlength="4000" rows="2"></textarea></label>
+              <label>Task ID<input id="task-context-id" maxlength="128"></label>
+              <label>Current task<input id="task-context-current" maxlength="500"></label>
+              <label class="context-wide">Task details<textarea id="task-context-details" maxlength="4000" rows="2"></textarea></label>
+              <label>Task status<input id="task-context-status" maxlength="100"></label>
+              <label class="context-wide">Task notes<textarea id="task-context-notes" maxlength="4000" rows="2"></textarea></label>
+            </div>
+          </details>
           <button id="send-button" class="send-button" type="submit" aria-label="Send message">↑</button>
           <p>AI can make mistakes. Verify important information in the cited source documents.</p>
         </form>

@@ -12,7 +12,7 @@ from google.genai import types
 from pydantic import BaseModel, Field
 
 from AI_service import settings
-from AI_service.ai_service import BUSINESS_CONTEXT, MODEL, SYSTEM_PROMPT
+from AI_service.ai_service import MODEL, SYSTEM_PROMPT
 
 app = FastAPI()
 logger = logging.getLogger(__name__)
@@ -31,7 +31,8 @@ knowledge_base = [
             "XICTEK Systems is a product-focused software company building "
             "practical digital products and custom solutions."
         ),
-        "source": "https://www.xicteksystems.com/"
+        "source": "https://www.xicteksystems.com/",
+        "is_public": True
     },
     {
         "id": 2,
@@ -42,7 +43,8 @@ knowledge_base = [
             "using React, Next.js, and TypeScript, and cross-platform mobile "
             "development using Flutter and React Native."
         ),
-        "source": "https://www.xicteksystems.com/services"
+        "source": "https://www.xicteksystems.com/services",
+        "is_public": True
     },
     {
         "id": 3,
@@ -52,7 +54,8 @@ knowledge_base = [
             "integrations, chatbots, custom ML models, intelligent automation, "
             "and practical AI-assisted workflows."
         ),
-        "source": "https://www.xicteksystems.com/services"
+        "source": "https://www.xicteksystems.com/services",
+        "is_public": True
     },
     {
         "id": 4,
@@ -62,7 +65,8 @@ knowledge_base = [
             "managed infrastructure on Azure and AWS, as well as DevOps and "
             "cloud infrastructure services."
         ),
-        "source": "https://www.xicteksystems.com/services"
+        "source": "https://www.xicteksystems.com/services",
+        "is_public": True
     },
     {
         "id": 5,
@@ -73,7 +77,8 @@ knowledge_base = [
             "offline-first records, digital khata and customer records, PDF "
             "reports, voice entry, and backup and restore."
         ),
-        "source": "https://www.xicteksystems.com/"
+        "source": "https://www.xicteksystems.com/",
+        "is_public": True
     },
     {
         "id": 6,
@@ -82,7 +87,8 @@ knowledge_base = [
             "The XICTEK Systems website lists xicteksystems@gmail.com as a "
             "contact address."
         ),
-        "source": "https://www.xicteksystems.com/"
+        "source": "https://www.xicteksystems.com/",
+        "is_public": True
     }
 ]
 vector_store = []
@@ -109,11 +115,14 @@ def cosine_similarity(a, b):
 def build_vector_store():
     vector_store.clear()
     for item in knowledge_base:
+        if item.get("is_public") is not True:
+            continue
         vector_store.append({
             "id": item["id"],
             "title": item["title"],
             "content": item["content"],
             "source": item["source"],
+            "is_public": True,
             "embedding": create_embedding(
                 item["content"],
                 "RETRIEVAL_DOCUMENT"
@@ -128,6 +137,8 @@ def search_knowledge(question):
     query_embedding = create_embedding(question, "RETRIEVAL_QUERY")
     results = []
     for item in vector_store:
+        if item.get("is_public") is not True:
+            continue
         score = cosine_similarity(query_embedding, item["embedding"])
         results.append({
             "id": item["id"],
@@ -157,6 +168,7 @@ class ChatRequest(BaseModel):
 class KnowledgeRequest(BaseModel):
     title: str = Field(min_length=1, max_length=200)
     content: str = Field(min_length=1, max_length=4000)
+    is_public: bool = False
 
 
 @app.get("/")
@@ -175,7 +187,8 @@ def add_knowledge(
         "id": len(knowledge_base) + 1,
         "title": request.title,
         "content": request.content,
-        "source": "Admin-provided knowledge"
+        "source": "Admin-provided knowledge",
+        "is_public": request.is_public
     }
     knowledge_base.append(new_item)
     vector_store.clear()
@@ -211,7 +224,6 @@ def require_knowledge_api_key(provided_api_key: str | None) -> None:
 def chat(request: ChatRequest):
     history = conversations.get(request.conversation_id, [])
     prompt_data = {
-        "verified_business_context": BUSINESS_CONTEXT,
         "business_context": {
             "user": request.user,
             "business": request.business,

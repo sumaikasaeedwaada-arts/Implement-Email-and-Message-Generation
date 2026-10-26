@@ -54,6 +54,12 @@ CREATE TABLE IF NOT EXISTS chunks (
 );
 CREATE INDEX IF NOT EXISTS chunks_document
     ON chunks(document_id, chunk_index);
+CREATE TABLE IF NOT EXISTS vector_index_state (
+    id INTEGER PRIMARY KEY CHECK(id = 1),
+    embedding_model TEXT NOT NULL,
+    embedding_dimensions INTEGER,
+    similarity_metric TEXT NOT NULL CHECK(similarity_metric = 'cosine')
+);
 CREATE TABLE IF NOT EXISTS rate_limit_buckets (
     bucket_key TEXT PRIMARY KEY,
     window_started REAL NOT NULL,
@@ -90,6 +96,14 @@ def connect():
 def initialize_database() -> None:
     with connect() as connection:
         connection.executescript(SCHEMA)
+        connection.execute(
+            """
+            INSERT OR IGNORE INTO vector_index_state
+                (id, embedding_model, embedding_dimensions, similarity_metric)
+            VALUES (1, ?, NULL, 'cosine')
+            """,
+            (settings.GEMINI_EMBEDDING_MODEL,)
+        )
 
 
 def row_dict(row: sqlite3.Row | None) -> dict | None:

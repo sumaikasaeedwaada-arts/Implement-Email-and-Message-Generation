@@ -135,10 +135,28 @@ def search_chunks(
     ).fetchall()
     scored = []
     for row in rows:
-        score = cosine_similarity(
-            query_embedding,
-            json.loads(row["embedding_json"])
-        )
+        try:
+            stored_embedding = json.loads(row["embedding_json"])
+            if (
+                not isinstance(stored_embedding, list)
+                or any(
+                    isinstance(value, bool)
+                    or not isinstance(value, (int, float))
+                    for value in stored_embedding
+                )
+            ):
+                raise ValueError("Stored embedding is not a numeric vector.")
+            stored_embedding = [float(value) for value in stored_embedding]
+            if not all(math.isfinite(value) for value in stored_embedding):
+                raise ValueError("Stored embedding contains a non-finite value.")
+        except (json.JSONDecodeError, TypeError, ValueError, OverflowError):
+            logger.warning(
+                "Skipping chunk with malformed embedding (chunk_id=%s)",
+                row["id"]
+            )
+            continue
+
+        score = cosine_similarity(query_embedding, stored_embedding)
         if score >= settings.MIN_RELEVANCE_SCORE:
             scored.append({
                 "chunk_id": row["id"],
