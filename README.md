@@ -1,4 +1,4 @@
-# AI Business Assistant
+# Implement the Summary Generation Service
 
 An authenticated FastAPI business assistant with conversation history, document ingestion, semantic retrieval, and source citations. The browser UI is served by the API, and Gemini is configured through environment variables.
 
