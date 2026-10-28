@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111827">
+  <title>AI Business Assistant</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <main class="shell">
+    <section id="auth-screen" class="auth-card">
+      <div class="brand-mark">A</div>
+      <p class="eyebrow">BUSINESS WORKSPACE</p>
+      <h1>Your AI business assistant</h1>
+      <p class="muted">Ask questions across your business documents.</p>
+      <form id="auth-form">
+        <label>Email<input id="email" type="email" autocomplete="email" required></label>
+        <label>Password<input id="password" type="password" minlength="10"
+          autocomplete="current-password" required></label>
+        <button id="auth-submit" class="primary" type="submit">Sign in</button>
+      </form>
+      <button id="auth-toggle" class="text-button" type="button">Create an account</button>
+      <p id="auth-error" class="error" role="alert"></p>
+    </section>
+
+    <section id="workspace" class="workspace hidden">
+      <aside id="sidebar" class="sidebar">
+        <div class="sidebar-brand">
+          <span class="brand-mark small">A</span><span>Business AI</span>
+          <button id="close-sidebar" class="close-sidebar" type="button" aria-label="Close navigation">×</button>
+        </div>
+        <button id="new-chat" class="new-chat">＋ New conversation</button>
+        <p class="section-label">HISTORY</p>
+        <nav id="conversation-list" aria-label="Conversations"></nav>
+        <div class="sidebar-bottom">
+          <button id="upload-trigger" class="upload-button">＋ Add documents</button>
+          <input id="document-input" type="file" accept=".pdf,.docx,.txt" hidden>
+          <div id="document-list" class="document-list"></div>
+          <button id="sign-out" class="sign-out">Sign out</button>
+        </div>
+      </aside>
+
+      <section class="chat-panel">
+        <header class="topbar">
+          <div><strong id="conversation-title">New conversation</strong>
+            <span class="topbar-subtitle">Private document-grounded workspace</span></div>
+          <div class="topbar-actions">
+            <button id="mobile-menu" class="icon-button" aria-label="Show conversations">☰</button>
+            <button id="mobile-upload" class="icon-button" aria-label="Add documents">＋</button>
+          </div>
+        </header>
+        <div id="messages" class="messages" aria-live="polite">
+          <div id="welcome" class="welcome">
+            <div class="welcome-icon">✦</div>
+            <h2>What can I help you with?</h2>
+            <p>Upload PDFs, Word documents, or text files, then ask questions about them.</p>
+          </div>
+        </div>
+        <form id="message-form" class="composer">
+          <textarea id="message-input" rows="1" maxlength="4000"
+            placeholder="Ask a question about your business…" required></textarea>
+          <details class="context-details">
+            <summary>Add customer, business, or task context (optional)</summary>
+            <p class="context-note">Customer identifiers search your uploaded records. Context details are sent with each message and are not saved as records.</p>
+            <div class="context-fields">
+              <label>Customer ID, name, or contact<input id="customer-identifier" maxlength="200"></label>
+              <label>Business ID<input id="business-context-id" maxlength="128"></label>
+              <label>Business name<input id="business-context-name" maxlength="200"></label>
+              <label class="context-wide">Business details<textarea id="business-context-details" maxlength="4000" rows="2"></textarea></label>
+              <label>Task ID<input id="task-context-id" maxlength="128"></label>
+              <label>Current task<input id="task-context-current" maxlength="500"></label>
+              <label class="context-wide">Task details<textarea id="task-context-details" maxlength="4000" rows="2"></textarea></label>
+              <label>Task status<input id="task-context-status" maxlength="100"></label>
+              <label class="context-wide">Task notes<textarea id="task-context-notes" maxlength="4000" rows="2"></textarea></label>
+            </div>
+          </details>
+          <button id="send-button" class="send-button" type="submit" aria-label="Send message">↑</button>
+          <p>AI can make mistakes. Verify important information in the cited source documents.</p>
+        </form>
+      </section>
+    </section>
+    <div id="toast" class="toast" role="status"></div>
+  </main>
+  <script src="/static/app.js" defer></script>
+</body>
+</html>
