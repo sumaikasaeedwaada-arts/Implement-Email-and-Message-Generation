@@ -88,12 +88,52 @@ Interactive OpenAPI documentation is available at `/docs`; the schema is at `/op
 | `POST` | `/api/conversations/{id}/messages` | Yes | Ask a question with optional customer identifier and business/task context; returns answer and cited sources |
 | `POST` | `/chat` | Yes | Send a required `message`; optionally continue a conversation with `conversation_id`; returns the answer, citations, and conversation ID |
 | `POST` | `/api/business-summary` | Yes | Generate a structured summary from the caller's uploaded records and optional request-supplied business/task context |
+| `POST` | `/api/communications/generate` | Yes | Generate a grounded email or short message with configurable purpose, tone, length, and language |
 | `DELETE` | `/api/conversations/{id}` | Yes | Delete an owned conversation and its messages |
 | `GET`, `POST` | `/api/documents` | Yes | List or upload PDF/DOCX/TXT files (8 MB max) |
 | `DELETE` | `/api/documents/{id}` | Yes | Delete an owned document and its chunks |
 | `GET` | `/api/vector-index` | Yes | Read vector index configuration and the user's record count |
 
 Authenticated endpoints expect `Authorization: Bearer <access_token>`. The API rate limits each client IP to 10 auth requests/minute and 120 other API requests/minute. Configure trusted proxy handling at the ingress if deployed behind a reverse proxy.
+
+### Email and message generation
+
+`POST /api/communications/generate` requires the caller's bearer token.
+`communication_type` is required and accepts `email` or `message`. Purpose
+defaults to `customer_support` and also supports `follow_up`, `announcement`,
+`invitation`, and `custom` (which requires `custom_purpose`). Tone defaults to
+`professional` and supports `friendly`, `formal`, `polite`, `persuasive`, and
+`empathetic`. Length defaults to `medium` and supports `short` and `long`.
+Language defaults to English. Optional recipient name/context, sender name,
+customer identifier, and additional instructions are validated and
+length-limited. Email responses include a subject and body; message responses
+contain a single `message` field with no email formatting.
+
+Relevant public business knowledge is retrieved using the existing semantic
+retriever. Customer-record excerpts are retrieved only when a customer
+identifier is provided and are restricted to ready documents owned by the
+authenticated user. Retrieved material is treated as data, not instructions.
+Missing details are represented with a clear placeholder or a request for
+clarification rather than invented facts. The endpoint generates content only;
+it does not send communications.
+
+Example request:
+
+```json
+{
+  "communication_type": "email",
+  "purpose": "follow_up",
+  "tone": "professional",
+  "length": "medium",
+  "language": "English",
+  "recipient_name": "John",
+  "additional_instructions": "Follow up about the previous meeting."
+}
+```
+
+Successful email responses contain `success: true` and a `content` object with
+`subject` and `body`. Short-message responses contain `content.message`. Model
+failures return HTTP 503; malformed model output returns HTTP 502.
 
 ### Prepared business knowledge
 
@@ -215,7 +255,7 @@ Open <http://127.0.0.1:8000>. Create an account, upload a file, and ask a questi
 ## Tests
 
 ```powershell
-python -m unittest AI_service.test_business_summary AI_service.test_chat_api AI_service.test_rag_api -v
+python -m unittest AI_service.test_communication AI_service.test_business_summary AI_service.test_chat_api AI_service.test_rag_api -v
 ```
 
 Tests mock model calls and use a temporary SQLite database; they do not require a real provider key.

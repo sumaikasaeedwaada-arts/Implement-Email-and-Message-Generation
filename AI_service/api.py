@@ -28,6 +28,10 @@ from AI_service.schemas.business_summary import (
     BusinessSummaryRequest,
     BusinessSummaryResponse,
 )
+from AI_service.schemas.communication import (
+    CommunicationRequest,
+    CommunicationResponse,
+)
 from AI_service.schemas.chat import (
     BusinessContext,
     MessageRequest,
@@ -39,6 +43,11 @@ from AI_service.services.business_summary_service import (
     BusinessSummaryUnavailableError,
     InvalidBusinessSummaryError,
     generate_business_summary,
+)
+from AI_service.services.communication_service import (
+    CommunicationUnavailableError,
+    InvalidCommunicationError,
+    generate_communication,
 )
 from AI_service.time_utils import utc_now
 
@@ -325,6 +334,36 @@ def business_summary(
         ) from exc
     except Exception as exc:
         logger.error("Unexpected business summary processing failure.")
+        raise HTTPException(
+            status_code=500,
+            detail="An unexpected server error occurred."
+        ) from exc
+
+
+@app.post(
+    "/api/communications/generate",
+    response_model=CommunicationResponse
+)
+def generate_communication_content(
+    request: CommunicationRequest,
+    user: dict = Depends(authenticated_user)
+):
+    try:
+        content = generate_communication(user["id"], request)
+        return {"success": True, "content": content}
+    except InvalidCommunicationError as exc:
+        logger.warning("Communication model returned invalid output.")
+        raise HTTPException(
+            status_code=502,
+            detail="The AI service returned invalid communication content."
+        ) from exc
+    except CommunicationUnavailableError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail="Communication generation is temporarily unavailable."
+        ) from exc
+    except Exception as exc:
+        logger.error("Unexpected communication processing failure.")
         raise HTTPException(
             status_code=500,
             detail="An unexpected server error occurred."
